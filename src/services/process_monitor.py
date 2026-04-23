@@ -18,7 +18,7 @@ class ProcessMonitor(BaseService):
         limit (int): Maximum number of top processes to return.
 
     Methods:
-        collect(): Collect process metrics and return them as a list
+        collect(): collect process metrics and return them as a list
     """
 
     def __init__(self):
