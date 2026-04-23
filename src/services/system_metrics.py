@@ -124,7 +124,7 @@ class SystemMetrics(BaseService):
             "timestamp": datetime(2026, 4, 23, 15, 31, 0, tzinfo=IST),
             "cpu_metrics": {
                                 "overall_cpu_load": 12.0
-                            }
+                            },
             "memory_metrics": {
                                 "vm_total_memory": 16.0,
                                 "vm_available_memory": 8.4,
@@ -132,7 +132,7 @@ class SystemMetrics(BaseService):
                                 "vm_percent_used": 45.0,
                                 "swap_memory_available_total": 4.0,
                                 "swap_memory_used": 0.8
-                                }
+                                },
             "battery_metrics": {
                                 "current_battery_percent": 75.0
                                 } 
