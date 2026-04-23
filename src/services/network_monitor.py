@@ -1,6 +1,7 @@
 import psutil
 import time
 from src.services.base_service import BaseService
+from src.config.config import NETWORK_MONITOR_INTERVAL
 from src.logger.logger import Logger
 
 logger = Logger().setup_logs()
@@ -11,7 +12,7 @@ class NetworkMonitor(BaseService):
         try:
             logger.info("Collecting network metrics...")
             net_start = psutil.net_io_counters()
-            time.sleep(5)
+            time.sleep(NETWORK_MONITOR_INTERVAL)
             net_end = psutil.net_io_counters()
             data = {
                 "upload_speed_mb": round(
