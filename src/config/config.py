@@ -4,5 +4,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 LOG_DIR = BASE_DIR / "logs"
 
-#top processes limit 
+# top processes limit 
 PROCESS_LIMIT = 10
+
+# network montior interval: in sec
+NETWORK_MONITOR_INTERVAL = 5
