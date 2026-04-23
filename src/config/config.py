@@ -9,3 +9,6 @@ PROCESS_LIMIT = 10
 
 # network montior interval: in sec
 NETWORK_MONITOR_INTERVAL = 5
+
+# system metrics interval: in sec
+SYSTEM_METRICS_INTERVAL = 5
