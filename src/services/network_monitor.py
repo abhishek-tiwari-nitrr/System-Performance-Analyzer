@@ -8,7 +8,38 @@ logger = Logger().setup_logs()
 
 
 class NetworkMonitor(BaseService):
+    """
+    Monitor system network activity.
+
+    This class collects network I/O metrics by comparing network counters over a short interval to estimate upload and download speed
+
+    Inherits: BaseService
+
+    Methods:
+        collect(): collect network metrics and return them as a dictionary.
+    """
+
     def collect(self) -> dict:
+        """
+        Collect network usage statistics.
+
+        Captures network counters before and after the configured interval, then calculates upload and download speed during that period
+
+        Returns:
+            dict:
+                Dictionary containing:
+                    - upload_speed_mb (float): Upload speed during interval in MB.
+                    - download_speed_mb (float): Download speed during interval in MB.
+                    - bytes_sent (int): Total bytes sent since system boot.
+                    - bytes_received (int): Total bytes received since system boot.
+        Example:
+            {
+                "upload_speed_mb": 1.23,
+                "download_speed_mb": 1.23,
+                "bytes_sent": 123456789,
+                "bytes_received": 123456789
+            }
+        """
         try:
             logger.info("Collecting network metrics...")
             net_start = psutil.net_io_counters()
