@@ -176,6 +176,10 @@ def all_users():
     Retrieve all users in the system.
 
     Users are returned in descending order of creation time (most recently created users first)
+
+    Return:
+        list:
+            Retrieve all user records sorted by date in descending order
     """
     rows = (
         get_conn()
@@ -236,7 +240,17 @@ def insert_network_metric(username: str, data: dict):
 
 
 def insert_process_metrics(username: str, timestamp: str, processes: list):
-    """ """
+    """
+    Insert multiple process metrics for a user.
+
+    Args:
+        - username(str): Unique username
+        - timestamp(str): Date time
+        - processes(list):
+            - name(str)
+            - cpu_percent(float)
+            - memory_percent(float)
+    """
     rows = [
         (
             username,
@@ -256,7 +270,7 @@ def insert_process_metrics(username: str, timestamp: str, processes: list):
 
 def insert_system_metric(username: str, data: dict):
     """
-    Insert multiple process metrics for a user.
+    Insert multiple system metrics for a user.
 
      Args:
         - username(str): Unique username
@@ -419,7 +433,7 @@ def user_stats(username: str) -> dict:
     """
     Get total metric row counts for a specific user.
 
-    This provides a quick overview of how much data has been collected per category.
+    This provides a quick overview of how much data has been collected per category
 
     Args:
         - username(str): Unique username
@@ -451,7 +465,7 @@ def db_size_kb() -> float:
 
     Returns:
         float:
-            Size of the database file in KB. Returns 0.0 if the file does not exist.
+            Size of the database file in KB. Returns 0.0 if the file does not exist
     """
     return round(DB_PATH.stat().st_size / 1024, 1) if DB_PATH.exists() else 0.0
 
@@ -477,3 +491,49 @@ def global_stats() -> dict:
         "network_rows": c.execute("SELECT COUNT(*) FROM network_metrics").fetchone()[0],
         "db_size_kb": db_size_kb(),
     }
+
+
+# settings
+def get_setting(key: str, default=None):
+    """
+    Retrieve a setting value by key from the database.
+
+     Args:
+        key(str): The setting key to look up
+        default(Any, optional): Value to return if the key is not found. Defaults to None
+    Return:
+        - str: The stored value as a string if found, otherwise the provided default
+    """
+    row = (
+        get_conn()
+        .execute("SELECT value FROM settings WHERE key=?", (key,))
+        .fetchone()
+    )
+    return row["value"] if row else default
+
+
+def set_setting(key: str, value: str):
+    """
+    Insert or update a setting in the database.
+
+    Args:
+        key(str): The setting key to look up
+        value(str): The value to store (will be converted to string)
+    """
+    get_conn().execute(
+        "INSERT OR REPLACE INTO settings (key,value) VALUES (?,?)",
+        (key, str(value)),
+    )
+    get_conn().commit()
+
+
+def all_settings() -> dict:
+    """
+    Retrieve all settings from the database.
+
+    Return:
+        dict:
+            Lists of All key and values
+    """
+    rows = get_conn().execute("SELECT key,value FROM settings").fetchall()
+    return {r["key"]: r["value"] for r in rows}
