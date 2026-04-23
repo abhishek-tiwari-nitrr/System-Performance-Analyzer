@@ -3,6 +3,10 @@ from pathlib import Path
 # base path
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 LOG_DIR = BASE_DIR / "logs"
+DATA_DIR = BASE_DIR / "data"
+
+# data base file path
+DB_PATH = DATA_DIR / "spa.db"
 
 # top processes limit 
 PROCESS_LIMIT = 10
