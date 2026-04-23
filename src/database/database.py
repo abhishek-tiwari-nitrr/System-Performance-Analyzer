@@ -120,6 +120,15 @@ def init_db():
 def insert_user(username, password_hash, email, is_admin=0) -> bool:
     """
     Insert a new user.
+
+    Args:
+        username(str): Unique username
+        password_hash(str): Hashed password
+        email(str): User email
+        is_admin(int): 1 if admin, else 0
+
+    Returns:
+        bool: True if inserted, False if username exists
     """
     try:
         get_conn().execute(
@@ -133,6 +142,14 @@ def insert_user(username, password_hash, email, is_admin=0) -> bool:
 
 
 def get_user(username):
+    """
+    Fetch a user by username.
+
+    Args: username(str)
+
+    Returns:
+        sqlite3.Row | None: User record or None if not found
+    """
     return (
         get_conn()
         .execute("SELECT * FROM users WHERE username=?", (username,))
@@ -141,6 +158,13 @@ def get_user(username):
 
 
 def update_password(username, new_hash):
+    """
+    Update the Users Password.
+
+    Args:
+        username(str): Unique username
+        password_hash(str): Hashed password
+    """
     get_conn().execute(
         "UPDATE users SET password_hash=? WHERE username=?", (new_hash, username)
     )
@@ -148,6 +172,11 @@ def update_password(username, new_hash):
 
 
 def all_users():
+    """
+    Retrieve all users in the system.
+
+    Users are returned in descending order of creation time (most recently created users first)
+    """
     rows = (
         get_conn()
         .execute(
@@ -159,6 +188,14 @@ def all_users():
 
 
 def delete_user(username):
+    """
+    Delete a user from the database.
+
+    This operation will also delete all related records (system, process, and network metrics) automatically
+
+    Args:
+        username(str): Unique username
+    """
     c = get_conn()
     for tbl in ("system_metrics", "process_metrics", "network_metrics"):
         c.execute(f"DELETE FROM {tbl} WHERE username=?", (username,))
@@ -168,6 +205,18 @@ def delete_user(username):
 
 # Metric inserts
 def insert_network_metric(username: str, data: dict):
+    """
+    Insert network performance metrics for a user.
+
+    Args:
+        username(str): Unique username
+        data(dict):
+            - upload_speed_mb(float)
+            - download_speed_mb(float)
+            - bytes_sent(int)
+            - bytes_received(int)
+            - timestamp(str)
+    """
     get_conn().execute(
         """
         INSERT INTO network_metrics
@@ -187,6 +236,7 @@ def insert_network_metric(username: str, data: dict):
 
 
 def insert_process_metrics(username: str, timestamp: str, processes: list):
+    """ """
     rows = [
         (
             username,
@@ -205,6 +255,25 @@ def insert_process_metrics(username: str, timestamp: str, processes: list):
 
 
 def insert_system_metric(username: str, data: dict):
+    """
+    Insert multiple process metrics for a user.
+
+     Args:
+        - username(str): Unique username
+        - data(dict):
+            - timestamp(str)
+            - cpu_metrics(dict):
+                - overall_cpu_load(float)
+            - memory_metrics(dict):
+                - vm_total_memory(float)
+                - vm_available_memory(float)
+                - vm_used_memory(float)
+                - vm_percent_used(float)
+                - swap_memory_available_total(float)
+                - swap_memory_used(float)
+            - battery_metrics(dict):
+                - current_battery_percent(float)
+    """
     get_conn().execute(
         """
         INSERT INTO system_metrics
@@ -229,13 +298,23 @@ def insert_system_metric(username: str, data: dict):
 
 
 # fetches Metrics
-def fetch_network_metrics(username: str, day: int = None):
-    if day:
+def fetch_network_metrics(username: str, date: str = None):
+    """
+    Fetch network metrics for a user.
+
+    Args:
+        - username(str): Unique username
+        - date(str): date filter
+    Return:
+        list:
+            List of network metric records ordered by timestamp
+    """
+    if date is not None:
         rows = (
             get_conn()
             .execute(
-                "SELECT * FROM network_metrics WHERE username=? AND CAST(strftime('%d',timestamp) AS INTEGER)=? ORDER BY timestamp",
-                (username, day),
+                "SELECT * FROM network_metrics WHERE username=? AND DATE(timestamp)=DATE(?) ORDER BY timestamp",
+                (username, date),
             )
             .fetchall()
         )
@@ -251,13 +330,23 @@ def fetch_network_metrics(username: str, day: int = None):
     return [dict(r) for r in rows]
 
 
-def fetch_process_metrics(username: str, day: int = None):
-    if day:
+def fetch_process_metrics(username: str, date: str = None):
+    """
+    Fetch process metrics for a user.
+
+    Args:
+        - username(str): Unique username
+        - date(str): date filter
+    Return:
+        list:
+            List of process metric records ordered by timestamp
+    """
+    if date is not None:
         rows = (
             get_conn()
             .execute(
-                "SELECT * FROM process_metrics WHERE username=? AND CAST(strftime('%d',timestamp) AS INTEGER)=? ORDER BY timestamp",
-                (username, day),
+                "SELECT * FROM process_metrics WHERE username=? AND DATE(timestamp)=DATE(?) ORDER BY timestamp",
+                (username, date),
             )
             .fetchall()
         )
@@ -273,13 +362,23 @@ def fetch_process_metrics(username: str, day: int = None):
     return [dict(r) for r in rows]
 
 
-def fetch_system_metrics(username: str, day: int = None):
-    if day:
+def fetch_system_metrics(username: str, date: str = None):
+    """
+    Fetch system metrics for a user.
+
+    Args:
+        - username(str): Unique username
+        - date(str): date filter
+    Return:
+        list:
+            List of system metric records ordered by timestamp
+    """
+    if date is not None:
         rows = (
             get_conn()
             .execute(
-                "SELECT * FROM system_metrics WHERE username=? AND CAST(strftime('%d',timestamp) AS INTEGER)=? ORDER BY timestamp",
-                (username, day),
+                "SELECT * FROM system_metrics WHERE username=? AND DATE(timestamp)=DATE(?) ORDER BY timestamp",
+                (username, date),
             )
             .fetchall()
         )
@@ -296,10 +395,19 @@ def fetch_system_metrics(username: str, day: int = None):
 
 
 def available_days(username: str):
+    """
+    Get all distinct dates for which system metrics exist for a user.
+
+    Args:
+        - username(str): Unique username
+    Return:
+        list:
+            List of dates in ascending order
+    """
     rows = (
         get_conn()
         .execute(
-            "SELECT DISTINCT CAST(strftime('%d',timestamp) AS INTEGER) d FROM system_metrics WHERE username=? ORDER BY d",
+            "SELECT DISTINCT DATE(?) d FROM system_metrics WHERE username=? ORDER BY d",
             (username,),
         )
         .fetchall()
@@ -308,6 +416,21 @@ def available_days(username: str):
 
 
 def user_stats(username: str) -> dict:
+    """
+    Get total metric row counts for a specific user.
+
+    This provides a quick overview of how much data has been collected per category.
+
+    Args:
+        - username(str): Unique username
+
+    Return:
+        dict:
+            dictionary containing for user:
+                - system_rows(int): count
+                - process_rows(int): count
+                - network_rows(int): count
+    """
     c = get_conn()
     return {
         "system_rows": c.execute(
@@ -323,10 +446,29 @@ def user_stats(username: str) -> dict:
 
 
 def db_size_kb() -> float:
+    """
+    Get the current SQLite database file size in kilobytes.
+
+    Returns:
+        float:
+            Size of the database file in KB. Returns 0.0 if the file does not exist.
+    """
     return round(DB_PATH.stat().st_size / 1024, 1) if DB_PATH.exists() else 0.0
 
 
 def global_stats() -> dict:
+    """
+    Get overall database statistics.
+
+    Returns:
+        dict:
+            A dictionary containing:
+            - total_users(int)
+            - system_rows(int)
+            - process_rows(int)
+            - network_rows(int)
+            - db_size_kb(float)
+    """
     c = get_conn()
     return {
         "total_users": c.execute("SELECT COUNT(*) FROM users").fetchone()[0],
