@@ -16,3 +16,10 @@ NETWORK_MONITOR_INTERVAL = 5
 
 # system metrics interval: in sec
 SYSTEM_METRICS_INTERVAL = 5
+
+# admin details 
+# ADMIN_USER = "admin"
+# ADMIN_PASS_HASH = None
+
+# Max Montior Mins
+MAX_MONITOR_MINUTES = 5
