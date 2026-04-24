@@ -1,9 +1,10 @@
+import os
 import sqlite3
 import threading
-from src.config.config import DB_PATH
+from src.config.config import DB_PATH, DATA_DIR
 from src.logger.logger import Logger
 
-logger = Logger.setup_logs()
+logger = Logger().setup_logs()
 
 # Tables:
 # 1. user - Stores user details
@@ -98,6 +99,8 @@ def get_conn() -> sqlite3.Connection:
         conn = get_conn()
         rows = conn.execute("SELECT * FROM users").fetchall()
     """
+    os.makedirs(DATA_DIR, exist_ok=True)
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     if not hasattr(_local, "conn") or _local.conn is None:
         _local.conn = sqlite3.connect(str(DB_PATH), check_same_thread=False)
         _local.conn.row_factory = sqlite3.Row
@@ -505,9 +508,7 @@ def get_setting(key: str, default=None):
         - str: The stored value as a string if found, otherwise the provided default
     """
     row = (
-        get_conn()
-        .execute("SELECT value FROM settings WHERE key=?", (key,))
-        .fetchone()
+        get_conn().execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
     )
     return row["value"] if row else default
 
