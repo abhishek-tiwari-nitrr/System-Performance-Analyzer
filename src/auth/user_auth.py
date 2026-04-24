@@ -37,6 +37,7 @@ class UserAuthService:
         Initializes the database connection and ensures schema setup.
         """
         init_db()
+        self._add_admin()
 
     def _add_admin(self):
         """
@@ -91,7 +92,7 @@ class UserAuthService:
             return False
 
         new_user = insert_user(username.strip(), self._hash(password), email.strip())
-        logger.info(f"Register '{username}': {'ok' if new_user else 'failed (exists)'}")
+        logger.info(f"Register '{username}': {'Done' if new_user else 'failed (exists)'}")
         return new_user
 
     def login_user(self, username: str, password: str) -> bool:
@@ -109,7 +110,7 @@ class UserAuthService:
             logger.warning(f"Login failed (not found): {username}")
             return False
         user = self._verify(password, row["password_hash"])
-        logger.info(f"Login '{username}': {'ok' if user else 'wrong password'}")
+        logger.info(f"Login '{username}': {'Done' if user else 'wrong password'}")
         return user
 
     def change_password(
