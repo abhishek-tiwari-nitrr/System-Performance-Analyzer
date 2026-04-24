@@ -7,11 +7,17 @@ wheels/
 *.egg-info
 
 # Virtual environments
-.venv
+spa
+.vscode
 
 #folder
 using CLI
 
-
 # .env
 .env
+
+# logs
+logs
+
+# data
+*.db
