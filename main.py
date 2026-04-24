@@ -16,6 +16,38 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+st.markdown(
+    """
+<style>
+    .admin-banner{
+            background-color:#28a745;
+            color:white;
+            padding:6px 10px;
+            border-radius:6px;
+            font-size:12px;
+            display:inline-block;
+            font-weight:500;
+            }
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+DEFAULTS = dict(
+    logged_in=False,
+    username=None,
+    is_admin=False,
+    svc=None,
+    monitor_running=False,
+    monitor_done=False,
+    monitor_samples=0,
+    monitor_clamped=None,
+)
+
+for k, v in DEFAULTS.items():
+    if k not in st.session_state:
+        st.session_state[k] = v
+
 
 def page_auth():
     _, col, _ = st.columns([1, 2, 1])
@@ -37,7 +69,7 @@ def page_auth():
             login_password = st.text_input(
                 "Password", type="password", key="login_password"
             )
-            if st.button("Login", use_container_width=True, type="primary"):
+            if st.button("Login", width="stretch", type="primary"):
                 if login_username and login_password:
                     if auth.login_user(login_username, login_password):
                         st.session_state.logged_in = True
@@ -63,9 +95,7 @@ def page_auth():
                 register_confirm = st.text_input(
                     "Confirm", type="password", key="register_confirm"
                 )
-                if st.button(
-                    "Create Account", use_container_width=True, type="primary"
-                ):
+                if st.button("Create Account", width="stretch", type="primary"):
                     if not (register_username and register_email and register_password):
                         st.warning("All fields required.")
                     elif register_password != register_confirm:
@@ -80,8 +110,29 @@ def page_auth():
                         st.error("❌ Username already taken.")
 
 
+def sidebar() -> str:
+    with st.sidebar:
+        st.markdown(f"### 👤 {st.session_state.username}")
+        if st.session_state.is_admin:
+            st.markdown(
+                '<span class="admin-banner">🔑 Administrator</span>',
+                unsafe_allow_html=True,
+            )
+        st.markdown("---")
+
+        st.markdown("---")
+        if st.button("🚪 Logout", width="stretch"):
+            for k, v in DEFAULTS.items():
+                st.session_state[k] = v
+            st.rerun()
+
+
 def main():
-    page_auth()
+    if not st.session_state.logged_in:
+        page_auth()
+        return
+    sidebar()
+
 
 if __name__ == "__main__":
     main()
