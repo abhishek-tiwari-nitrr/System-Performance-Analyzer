@@ -20,10 +20,28 @@ admin_password = os.getenv("ADMIN_PASSWORD")
 
 
 class UserAuthService:
+    """
+    Service class responsible for user authentication and authorization.
+
+    Provides functionality for:
+        - User registration
+        - User login verification
+        - Password management
+        - Admin initialization
+        - Role checking
+        - System configuration checks
+    """
+
     def __init__(self):
+        """
+        Initializes the database connection and ensures schema setup.
+        """
         init_db()
 
     def _add_admin(self):
+        """
+        Creates the default admin user if it does not already exist.
+        """
         if not get_user(admin_user):
             insert_user(
                 admin_user,
@@ -34,12 +52,39 @@ class UserAuthService:
             logger.info("Admin account Added.")
 
     def _hash(self, password: str) -> str:
+        """
+        Hashes a plain text password using bcrypt.
+
+        Args:
+            - password(str): Raw password string
+        Returns:
+            - str: Hashed password
+        """
         return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
     def _verify(self, password: str, hashed: str) -> bool:
+        """
+        Verifies a plain text password against a hashed password.
+
+        Args:
+            - password(str): Plain text password
+            - hashed(str): Stored hashed password
+        Returns:
+            - bool: True if password matches, False otherwise
+        """
         return bcrypt.checkpw(password.encode(), hashed.encode())
 
     def register_user(self, username: str, password: str, email: str) -> bool:
+        """
+        Registers a new user in the system.
+
+        Args:
+            - username(str): Desired username
+            - password(str): Raw password
+            - email(str): User email address
+        Returns:
+            - bool: True if registration succeeds, False otherwise
+        """
         if not username or not password:
             return False
         if username.lower() == admin_user.lower():
@@ -50,6 +95,15 @@ class UserAuthService:
         return new_user
 
     def login_user(self, username: str, password: str) -> bool:
+        """
+        Authenticates a user using username and password.
+
+        Args:
+            - username(str): Username.
+            - password(str): Plain text password
+        Returns:
+            - bool: True if authentication succeeds, False otherwise
+        """
         row = get_user(username.strip())
         if not row:
             logger.warning(f"Login failed (not found): {username}")
@@ -61,6 +115,16 @@ class UserAuthService:
     def change_password(
         self, username: str, current_password: str, new_password: str
     ) -> bool:
+        """
+        Changes a user's password after verifying current credentials.
+
+        Args:
+            - username(str): Username
+            - current_password(str): Current password
+            - new_password(str): New password
+        Returns:
+            - bool: True if password update succeeds, False otherwise
+        """
         if not self.login_user(username, current_password):
             return False
         update_password(username, self._hash(new_password))
@@ -68,8 +132,22 @@ class UserAuthService:
         return True
 
     def registration_allowed(self) -> bool:
+        """
+        Checks whether new user registration is allowed by system settings.
+
+        Returns:
+            - bool: True if registration is enabled, False otherwise
+        """
         return get_setting("allow_registration", "1") == "1"
 
     def is_admin(self, username: str) -> bool:
+        """
+        Checks whether a given user has admin privileges.
+
+        Args:
+            - username(str): Username to check
+        Returns:
+            - bool: True if user is admin, False otherwise
+        """
         row = get_user(username)
         return bool(row and row["is_admin"])
