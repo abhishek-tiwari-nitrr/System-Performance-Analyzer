@@ -298,14 +298,14 @@ def insert_system_metric(username: str, data: dict):
         (
             username,
             data.get("timestamp"),
-            data.get("cpu_metrics", {}).get("overall_cpu_load"),
-            data.get("memory_metrics", {}).get("vm_total_memory"),
-            data.get("memory_metrics", {}).get("vm_available_memory"),
-            data.get("memory_metrics", {}).get("vm_used_memory"),
-            data.get("memory_metrics", {}).get("vm_percent_used"),
-            data.get("memory_metrics", {}).get("swap_memory_available_total"),
-            data.get("memory_metrics", {}).get("swap_memory_used"),
-            data.get("battery_metrics", {}).get("current_battery_percent"),
+            data.get("overall_cpu_load"),
+            data.get("vm_total_memory"),
+            data.get("vm_available_memory"),
+            data.get("vm_used_memory"),
+            data.get("vm_percent_used"),
+            data.get("swap_memory_available_total"),
+            data.get("swap_memory_used"),
+            data.get("current_battery_percent"),
         ),
     )
     get_conn().commit()
