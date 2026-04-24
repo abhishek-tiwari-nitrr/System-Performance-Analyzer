@@ -12,3 +12,6 @@ wheels/
 #folder
 using CLI
 
+
+# .env
+.env
