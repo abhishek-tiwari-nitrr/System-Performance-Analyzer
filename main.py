@@ -1,7 +1,9 @@
 import streamlit as st
 import time
 from src.auth.user_auth import UserAuthService
+from src.config.config import TOKEN_PARAM
 from src.services.service_orchestrator import ServiceOrchestrator
+from src.user_session.user_session import create_token, verify_token
 from src.logger.logger import Logger
 from src.database.database import init_db
 
@@ -51,6 +53,40 @@ for k, v in DEFAULTS.items():
         st.session_state[k] = v
 
 
+def _restore_session():
+    if st.session_state.logged_in:
+        return
+
+    token = st.query_params.get(TOKEN_PARAM)
+    username = verify_token(token)
+
+    if username:
+        st.session_state.logged_in = True
+        st.session_state.username = username
+        st.session_state.is_admin = auth.is_admin(username)
+        logger.info(f"Session restored via JWT: {username}")
+
+
+def _login_success(username: str):
+    token = create_token(username)
+    st.query_params[TOKEN_PARAM] = token
+    st.session_state.logged_in = True
+    st.session_state.username = username
+    st.session_state.is_admin = auth.is_admin(username)
+    logger.info(f"Login Done: {username}")
+
+
+def _logout():
+    st.query_params.clear()
+    for k, v in DEFAULTS.items():
+        st.session_state[k] = v
+    logger.info("User logged out.")
+
+
+# Restore before any UI renders
+_restore_session()
+
+
 def page_auth():
     _, col, _ = st.columns([1, 2, 1])
     with col:
@@ -74,11 +110,7 @@ def page_auth():
             if st.button("Login", width="stretch", type="primary"):
                 if login_username and login_password:
                     if auth.login_user(login_username, login_password):
-                        st.session_state.logged_in = True
-                        st.session_state.username = login_username.strip()
-                        st.session_state.is_admin = auth.is_admin(
-                            login_username.strip()
-                        )
+                        _login_success(login_username.strip())
                         st.rerun()
                     else:
                         st.error("❌ Invalid username or password.")
@@ -127,10 +159,7 @@ def sidebar() -> str:
 
         st.markdown("---")
         if st.button("🚪 Logout", width="stretch"):
-
-            for k, v in DEFAULTS.items():
-                st.session_state[k] = v
-
+            _logout()
             st.rerun()
 
     return page
