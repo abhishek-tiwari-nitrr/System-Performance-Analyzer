@@ -4,6 +4,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 LOG_DIR = BASE_DIR / "logs"
 DATA_DIR = BASE_DIR / "data"
+REPORT_DIR = BASE_DIR / "report"
 
 # data base file path
 DB_PATH = DATA_DIR / "spa.db"
@@ -18,9 +19,18 @@ NETWORK_MONITOR_INTERVAL = 5
 SYSTEM_METRICS_INTERVAL = 5
 
 # Max Montior Mins
-MAX_MONITOR_MINUTES = 5
+MAX_MONITOR_MINUTES = 120
 
 # user session
 ALGORITHM  = "HS256"
 TOKEN_DAYS = 7
 TOKEN_PARAM = "session"
+
+# colors for plots 
+ACCENT = "#4B9FE1"
+ORANGE = "#ff7f0e"
+GREEN = "#22C55E"
+RED = "#EF4444"
+
+# Plot
+MAX_TICKER = 10
