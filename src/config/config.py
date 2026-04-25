@@ -19,3 +19,8 @@ SYSTEM_METRICS_INTERVAL = 5
 
 # Max Montior Mins
 MAX_MONITOR_MINUTES = 5
+
+# user session
+ALGORITHM  = "HS256"
+TOKEN_DAYS = 7
+TOKEN_PARAM = "session"
