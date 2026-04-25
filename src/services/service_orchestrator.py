@@ -129,7 +129,7 @@ class ServiceOrchestrator:
                     "swap_memory_used": s.get("memory_metrics", {}).get(
                         "swap_memory_used"
                     ),
-                    "battery_percent": s.get("battery_metrics", {}).get(
+                    "current_battery_percent": s.get("battery_metrics", {}).get(
                         "current_battery_percent"
                     ),
                 },
