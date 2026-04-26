@@ -2,10 +2,12 @@ import streamlit as st
 import time
 import pandas as pd
 from datetime import datetime
+import os
 from src.auth.user_auth import UserAuthService
 from src.config.config import TOKEN_PARAM, ACCENT, GREEN, ORANGE, PROCESS_LIMIT, RED
 import plotly.graph_objects as go
 import plotly.express as px
+from src.report_gen.report_generator import ReportGenerator
 from src.services.service_orchestrator import ServiceOrchestrator
 from src.user_session.user_session import create_token, verify_token
 from src.analysis.analysis import Analysis
@@ -51,6 +53,9 @@ DEFAULTS = dict(
     monitor_done=False,
     monitor_samples=0,
     monitor_clamped=None,
+    pdf_bytes=None,
+    pdf_ready=False,
+    pdf_day=None,
 )
 
 for k, v in DEFAULTS.items():
@@ -428,14 +433,13 @@ def page_report():
                     )
                 )
                 fig_download.update_layout(
-                    title = "Download",
-                    xaxis_title = "Timestamp",
-                    yaxis_title = "Download Speed (MB/s)",
+                    title="Download",
+                    xaxis_title="Timestamp",
+                    yaxis_title="Download Speed (MB/s)",
                     template="plotly_white",
-                    height=300
+                    height=300,
                 )
-                st.plotly_chart(fig_download, width='stretch')
-
+                st.plotly_chart(fig_download, width="stretch")
 
                 fig_upload = go.Figure()
                 fig_upload.add_trace(
@@ -446,15 +450,33 @@ def page_report():
                     )
                 )
                 fig_upload.update_layout(
-                    title = "Upload",
-                    xaxis_title = "Timestamp",
-                    yaxis_title = "Upload Speed (MB/s)",
+                    title="Upload",
+                    xaxis_title="Timestamp",
+                    yaxis_title="Upload Speed (MB/s)",
                     template="plotly_white",
-                    height=300
+                    height=300,
                 )
-                st.plotly_chart(fig_upload, width='stretch')
+                st.plotly_chart(fig_upload, width="stretch")
 
-                
+        with t_pdf:
+            try:
+                pdf_path = f"Report_{user}.pdf"
+                ReportGenerator(network_plot, process_plot, system_plot, user)
+                if not os.path.exists(pdf_path):
+                    st.error("❌ PDF could not be created.")
+                else:
+                    with open(pdf_path, "rb") as f:
+                        pdf_bytes = f.read()
+                    os.remove(pdf_path)
+                    st.download_button(
+                        label="⬇️ Click here to Download",
+                        data=pdf_bytes,
+                        file_name=f"SPA_{user}_Day{selected_day}.pdf",
+                        mime="application/pdf",
+                    )
+            except Exception as e:
+                st.error(f"PDF error: {e}")
+                logger.exception(f"PDF generation failed: {e}")
 
 
 def main():
