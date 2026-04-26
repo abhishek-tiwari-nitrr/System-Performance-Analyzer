@@ -1,11 +1,16 @@
 import streamlit as st
 import time
+import pandas as pd
+from datetime import datetime
 from src.auth.user_auth import UserAuthService
-from src.config.config import TOKEN_PARAM
+from src.config.config import TOKEN_PARAM, ACCENT, GREEN, ORANGE
+import plotly.graph_objects as go
+import plotly.express as px
 from src.services.service_orchestrator import ServiceOrchestrator
 from src.user_session.user_session import create_token, verify_token
+from src.analysis.analysis import Analysis
 from src.logger.logger import Logger
-from src.database.database import init_db
+from src.database.database import init_db, available_days
 
 
 init_db()
@@ -154,7 +159,7 @@ def sidebar() -> str:
             )
         st.markdown("---")
 
-        nav_options = ["🔍 Monitor"]
+        nav_options = ["🔍 Monitor", "📊 Report"]
         page = st.radio("Select a page", nav_options, label_visibility="collapsed")
 
         st.markdown("---")
@@ -224,6 +229,92 @@ def page_monitor():
         )
 
 
+def page_report():
+    user = st.session_state.username
+    st.title("📊 Performance Report")
+    st.markdown("---")
+
+    days = available_days(user)
+    if not days:
+        st.warning("⚠️ No data yet. Run the monitor first.")
+        return
+
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        selected_day = st.selectbox(
+            "Select day to Analyse",
+            days,
+            format_func=lambda d: datetime.strptime(d, "%Y-%m-%d").strftime(
+                "Day %d - %B %Y"
+            ),
+        )
+
+    with col2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        analyse_button = st.button("🔍 Analyse", type="primary", width="stretch")
+
+    if not analyse_button:
+        return
+
+    with st.spinner("Analysing your data…"):
+        try:
+            analysis = Analysis(user)
+            (
+                network_df,
+                process_df,
+                system_df,
+                network_plot,
+                process_plot,
+                system_plot,
+            ) = analysis.run(selected_day)
+        except Exception as e:
+            st.error(f"Analysis error: {e}")
+            return
+
+        if system_df.empty and process_df.empty:
+            st.warning("No data found for this day.")
+            return
+
+        t_sys, t_proc, t_net, t_pdf = st.tabs(
+            ["🖥️ System", "⚙️ Processes", "🌐 Network", "📥 PDF"]
+        )
+
+        with t_sys:
+            if not system_df.empty:
+                system_df["timestamp"] = pd.to_datetime(system_df["timestamp"])
+
+                fig = go.Figure()
+                fig.add_trace(
+                    go.Scatter(
+                        x=system_df["timestamp"],
+                        y=system_df["overall_cpu_load"],
+                        name="CPU %",
+                        line=dict(color=ACCENT),
+                    )
+                )
+                fig.update_yaxes(range=[0, 100])
+                fig.update_layout(title="CPU Load", height=300)
+                st.plotly_chart(fig, width='stretch')
+
+                fig2 = px.line(
+                    system_df,
+                    x="timestamp",
+                    y="vm_percent_used",
+                    title="RAM Usage %",
+                    color_discrete_sequence=[GREEN],
+                )
+                fig2.update_yaxes(range=[0, 100])
+                fig2.update_layout(height=250)
+                st.plotly_chart(fig2, width='stretch')
+
+                if system_df["battery_percent"].notna().any():
+                    fig3 = px.line(system_df, x="timestamp", y="battery_percent",
+                                title="Battery %", color_discrete_sequence=[ORANGE])
+                    fig3.update_yaxes(range=[0, 100])
+                    fig3.update_layout(height=250)
+                    st.plotly_chart(fig3, width='stretch')
+
+
 def main():
     if not st.session_state.logged_in:
         page_auth()
@@ -232,6 +323,10 @@ def main():
     page = sidebar()
 
     if page == "🔍 Monitor":
+        page_monitor()
+    elif page == "📊 Report":
+        page_report()
+    else:
         page_monitor()
 
 
