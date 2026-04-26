@@ -20,4 +20,8 @@ using CLI
 logs
 
 # data
+data
 *.db
+
+# reports 
+report
