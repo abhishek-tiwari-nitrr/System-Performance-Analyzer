@@ -3,7 +3,7 @@ import time
 import pandas as pd
 from datetime import datetime
 from src.auth.user_auth import UserAuthService
-from src.config.config import TOKEN_PARAM, ACCENT, GREEN, ORANGE
+from src.config.config import TOKEN_PARAM, ACCENT, GREEN, ORANGE, PROCESS_LIMIT
 import plotly.graph_objects as go
 import plotly.express as px
 from src.services.service_orchestrator import ServiceOrchestrator
@@ -288,31 +288,135 @@ def page_report():
                     go.Scatter(
                         x=system_df["timestamp"],
                         y=system_df["overall_cpu_load"],
-                        name="CPU %",
                         line=dict(color=ACCENT),
                     )
                 )
-                fig.update_yaxes(range=[0, 100])
-                fig.update_layout(title="CPU Load", height=300)
-                st.plotly_chart(fig, width='stretch')
+                fig.update_layout(
+                    title="CPU Load %",
+                    xaxis_title="Timestamp",
+                    yaxis_title="CPU Usage (%)",
+                    template="plotly_white",
+                    height=300,
+                    yaxis=dict(range=[0, 100]),
+                )
+                st.plotly_chart(fig, width="stretch")
 
                 fig2 = px.line(
                     system_df,
                     x="timestamp",
                     y="vm_percent_used",
-                    title="RAM Usage %",
                     color_discrete_sequence=[GREEN],
                 )
-                fig2.update_yaxes(range=[0, 100])
-                fig2.update_layout(height=250)
-                st.plotly_chart(fig2, width='stretch')
+                fig2.update_layout(
+                    title="RAM Usage %",
+                    xaxis_title="Timestamp",
+                    yaxis_title="Memory Usage (%)",
+                    template="plotly_white",
+                    height=300,
+                    yaxis=dict(range=[0, 100]),
+                )
+                st.plotly_chart(fig2, width="stretch")
 
                 if system_df["battery_percent"].notna().any():
-                    fig3 = px.line(system_df, x="timestamp", y="battery_percent",
-                                title="Battery %", color_discrete_sequence=[ORANGE])
-                    fig3.update_yaxes(range=[0, 100])
-                    fig3.update_layout(height=250)
-                    st.plotly_chart(fig3, width='stretch')
+                    fig3 = px.line(
+                        system_df,
+                        x="timestamp",
+                        y="battery_percent",
+                        color_discrete_sequence=[ORANGE],
+                    )
+                    fig3.update_layout(
+                        title="Battery Usage %",
+                        xaxis_title="Timestamp",
+                        yaxis_title="Battery Level (%)",
+                        template="plotly_white",
+                        height=300,
+                        yaxis=dict(range=[0, 100]),
+                    )
+                    st.plotly_chart(fig3, width="stretch")
+
+        with t_proc:
+            if not process_df.empty:
+                process_df["timestamp"] = pd.to_datetime(process_df["timestamp"])
+
+                # data processing for graph
+                try:
+                    process_clean = process_df[
+                        process_df["process_name"] != "System Idle Process"
+                    ]
+                    process_agg = (
+                        process_clean.groupby(["process_name", "timestamp"])
+                        .agg({"cpu_percent": "sum", "memory_percent": "sum"})
+                        .reset_index()
+                    )
+                    # Get top n CPU-consuming processes
+                    top_n_cpu_processes = (
+                        process_agg.groupby("process_name")["cpu_percent"]
+                        .sum()
+                        .sort_values(ascending=False)
+                        .head(PROCESS_LIMIT)
+                        .index
+                    )
+                    agg_top_n = process_agg[
+                        process_agg["process_name"].isin(top_n_cpu_processes)
+                    ]
+                    cpu_total = agg_top_n.groupby("process_name")["cpu_percent"].sum()
+                    memory_total = agg_top_n.groupby("process_name")[
+                        "memory_percent"
+                    ].sum()
+                    # Normalize to 100%
+                    cpu_total_norm = cpu_total / cpu_total.sum() * 100
+                    memory_total_norm = memory_total / memory_total.sum() * 100
+
+                    fig_cpu = go.Figure()
+                    fig_cpu.add_trace(
+                        go.Bar(
+                            x=cpu_total_norm.index,
+                            y=cpu_total_norm.values,
+                            marker_color="skyblue",
+                        )
+                    )
+                    fig_cpu.update_layout(
+                        title=f"Top {PROCESS_LIMIT} CPU-consuming Processes (Normalized %)",
+                        xaxis_title="Timestamp",
+                        yaxis_title="CPU % of Total",
+                        # yaxis=dict(range=[0, 100]),
+                        xaxis=dict(tickangle=80),
+                        template="plotly_white",
+                        height=500,
+                        width=900,
+                    )
+                    fig_cpu.update_yaxes(showgrid=True)
+                    st.plotly_chart(fig_cpu, width="stretch")
+
+                    fig_mem = go.Figure()
+                    fig_mem.add_trace(
+                        go.Bar(
+                            x=memory_total_norm.index,
+                            y=memory_total_norm.values,
+                            marker_color="lightgreen",
+                        )
+                    )
+
+                    fig_mem.update_layout(
+                        title=f"Top {PROCESS_LIMIT} Memory-consuming Processes (Normalized %)",
+                        xaxis_title="Timestamp",
+                        yaxis_title="Memory % of Total",
+                        xaxis=dict(tickangle=80),
+                        # yaxis=dict(range=[0, 100]),
+                        template="plotly_white",
+                        height=500,
+                        width=900,
+                    )
+                    fig_mem.update_yaxes(showgrid=True)
+
+                    st.plotly_chart(fig_mem, width="stretch")
+
+                except Exception as e:
+                    st.error(f"Process Analysis error: {e}")
+                    return
+                
+        with t_net:
+            pass
 
 
 def main():
