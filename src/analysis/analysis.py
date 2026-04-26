@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from src.database.database import (
@@ -271,3 +272,16 @@ class Analysis:
             logger.error(f"System plot - Battery Percentage trend over time: {e}")
 
         return plots
+    
+    def run(self, date:str = None):
+        if date is None:
+            date = str(datetime.today().day)
+
+        network_df, process_df, system_df = self.load(date)
+
+        network_plot = self._plot_network(network_df)
+        process_plot = self._plot_process(process_df)
+        system_plot = self._plot_system(system_df)
+
+        return network_df, process_df, system_df, network_plot, process_plot, system_plot
+
