@@ -233,7 +233,7 @@ class Analysis:
         except Exception as e:
             logger.error(f"System plot - CPU load trend over time: {e}")
 
-        # Memory Usage Trend Over Time
+        # 7. Memory Usage Trend Over Time
         try:
             plt.figure(figsize=(12, 6))
             plt.plot(system_df["timestamp"], system_df["vm_percent_used"], color=GREEN)
@@ -250,7 +250,7 @@ class Analysis:
         except Exception as e:
             logger.error(f"System plot - Memory Usage trend over time: {e}")
 
-        # Battery Percentage Trend Over Time
+        # 8. Battery Percentage Trend Over Time
         try:
             plt.figure(figsize=(10, 4))
             plt.plot(
