@@ -3,7 +3,7 @@ import time
 import pandas as pd
 from datetime import datetime
 from src.auth.user_auth import UserAuthService
-from src.config.config import TOKEN_PARAM, ACCENT, GREEN, ORANGE, PROCESS_LIMIT
+from src.config.config import TOKEN_PARAM, ACCENT, GREEN, ORANGE, PROCESS_LIMIT, RED
 import plotly.graph_objects as go
 import plotly.express as px
 from src.services.service_orchestrator import ServiceOrchestrator
@@ -414,9 +414,47 @@ def page_report():
                 except Exception as e:
                     st.error(f"Process Analysis error: {e}")
                     return
-                
+
         with t_net:
-            pass
+            if not network_df.empty:
+                network_df["timestamp"] = pd.to_datetime(network_df["timestamp"])
+
+                fig_download = go.Figure()
+                fig_download.add_trace(
+                    go.Scatter(
+                        x=network_df["timestamp"],
+                        y=network_df["download_speed_mb"],
+                        line=dict(color=ACCENT),
+                    )
+                )
+                fig_download.update_layout(
+                    title = "Download",
+                    xaxis_title = "Timestamp",
+                    yaxis_title = "Download Speed (MB/s)",
+                    template="plotly_white",
+                    height=300
+                )
+                st.plotly_chart(fig_download, width='stretch')
+
+
+                fig_upload = go.Figure()
+                fig_upload.add_trace(
+                    go.Scatter(
+                        x=network_df["timestamp"],
+                        y=network_df["upload_speed_mb"],
+                        line=dict(color=RED),
+                    )
+                )
+                fig_upload.update_layout(
+                    title = "Upload",
+                    xaxis_title = "Timestamp",
+                    yaxis_title = "Upload Speed (MB/s)",
+                    template="plotly_white",
+                    height=300
+                )
+                st.plotly_chart(fig_upload, width='stretch')
+
+                
 
 
 def main():
