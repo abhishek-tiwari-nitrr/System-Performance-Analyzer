@@ -2,6 +2,7 @@ import streamlit as st
 import time
 import pandas as pd
 from datetime import datetime
+import glob
 import os
 from src.auth.user_auth import UserAuthService
 from src.config.config import TOKEN_PARAM, ACCENT, GREEN, ORANGE, PROCESS_LIMIT, RED
@@ -468,6 +469,11 @@ def page_report():
                     with open(pdf_path, "rb") as f:
                         pdf_bytes = f.read()
                     os.remove(pdf_path)
+                    for img_path in glob.glob(f"report/*_{user}.png"):
+                        try:
+                            os.remove(img_path)
+                        except Exception as e:
+                            logger.error(f"Error in Plot Delete: {e}")
                     st.download_button(
                         label="⬇️ Click here to Download",
                         data=pdf_bytes,
