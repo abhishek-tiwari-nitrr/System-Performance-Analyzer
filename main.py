@@ -13,6 +13,12 @@ from src.services.service_orchestrator import ServiceOrchestrator
 from src.user_session.user_session import create_token, verify_token
 from src.analysis.analysis import Analysis
 from src.logger.logger import Logger
+from src.ml_engine.ml_engine import (
+    compute_health_score,
+    detect_anomalies,
+    rank_anomalous_processes,
+    detect_network_anomalies,
+)
 from src.database.database import init_db, available_days
 
 
@@ -40,6 +46,32 @@ st.markdown(
             display:inline-block;
             font-weight:500;
             }
+    .grade-badge{
+            display:inline-block;
+            font-size:1.8rem;
+            font-weight:800;
+            width:60px;
+            height:60px;
+            line-height:60px;
+            text-align:center;
+            border-radius:50%;
+            color:white;
+            }
+    .grade-A{background:#198754}
+    .grade-B{background:#0d6efd}
+    .grade-C{
+            background:#ffc107;
+            color:#333
+            }
+    .grade-D{background:#fd7e14}
+    .grade-F{background:#dc3545}
+    .anomaly-banner{
+            background:#fff3cd;
+            border-left:4px solid #ffc107;
+            padding:0.6rem 1rem;
+            border-radius:4px;
+            margin:0.5rem 0;
+    }
 </style>
 """,
     unsafe_allow_html=True,
@@ -281,8 +313,14 @@ def page_report():
             st.warning("No data found for this day.")
             return
 
-        t_sys, t_proc, t_net, t_pdf = st.tabs(
-            ["🖥️ System", "⚙️ Processes", "🌐 Network", "📥 PDF"]
+        t_sys, t_proc, t_net, t_ml, t_pdf = st.tabs(
+            [
+                "🖥️ System",
+                "⚙️ Processes",
+                "🌐 Network",
+                "🧠 Intelligent Anomaly Detection",
+                "📥 Download PDF",
+            ]
         )
 
         with t_sys:
@@ -458,6 +496,147 @@ def page_report():
                     height=300,
                 )
                 st.plotly_chart(fig_upload, width="stretch")
+
+        with t_ml:
+            system_df["timestamp"] = pd.to_datetime(system_df["timestamp"])
+            process_df["timestamp"] = pd.to_datetime(process_df["timestamp"])
+            network_df["timestamp"] = pd.to_datetime(network_df["timestamp"])
+
+            st.subheader("🏥 Health Score")
+            health = compute_health_score(system_df)
+            grade = health["grade"]
+
+            hc1, hc2, hc3, hc4, hc5 = st.columns(5)
+            hc1.markdown(
+                f"<div class='grade-badge grade-{grade}'>{grade}</div>"
+                f"<br><b>{health['overall']}/100</b>",
+                unsafe_allow_html=True,
+            )
+            hc2.metric("CPU", f"{health.get('avg_cpu', 0):.1f}%")
+            hc3.metric("RAM", f"{health.get('avg_mem', 0):.1f}%")
+            hc4.metric("Anomalies", f"{health.get('anomaly_rate', 0):.1f}%")
+            hc5.metric("Grade", grade)
+            st.info(f"💡 {health['summary']}")
+            st.markdown("---")
+
+            st.subheader("🔍 Anomaly Detection")
+            anomaly_df = detect_anomalies(system_df)
+            n_anom = (
+                int(anomaly_df["anomaly"].sum())
+                if "anomaly" in anomaly_df.columns
+                else 0
+            )
+
+            if n_anom:
+                st.markdown(
+                    f"<div class='anomaly-banner'>⚠️ <b>{n_anom} anomalous readings</b> "
+                    "detected - marked in red on the chart below.</div>",
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.success("✅ No anomalies detected.")
+
+            fig_anom = go.Figure()
+            fig_anom.add_trace(
+                go.Scatter(
+                    x=system_df["timestamp"],
+                    y=system_df["overall_cpu_load"],
+                    name="CPU %",
+                    line=dict(color=ACCENT),
+                )
+            )
+            if n_anom:
+                anom_rows = anomaly_df[anomaly_df["anomaly"] == 1]
+                fig_anom.add_trace(
+                    go.Scatter(
+                        x=anom_rows["timestamp"],
+                        y=anom_rows["overall_cpu_load"],
+                        mode="markers",
+                        name="Anomaly",
+                        marker=dict(color="red", size=8, symbol="x"),
+                    )
+                )
+            fig_anom.update_layout(
+                title="CPU Load - Anomalies",
+                xaxis_title="Timestamp",
+                yaxis_title="CPU %",
+                template="plotly_white",
+                height=300,
+            )
+            st.plotly_chart(fig_anom, width="stretch")
+
+            if n_anom:
+                adf = anomaly_df[anomaly_df["anomaly"] == 1][
+                    [
+                        "timestamp",
+                        "overall_cpu_load",
+                        "vm_percent_used",
+                        "battery_percent",
+                    ]
+                ].reset_index(drop=True)
+                st.dataframe(
+                    adf.style.map(
+                        lambda v: (
+                            "background-color:#fff3cd"
+                            if isinstance(v, float) and v > 80
+                            else ""
+                        ),
+                        subset=["overall_cpu_load", "vm_percent_used"],
+                    ),
+                    width="stretch",
+                )
+            st.markdown("---")
+
+            st.subheader("⚙️ Process Anomaly Ranking")
+            process_clean = process_df[
+                process_df["process_name"] != "System Idle Process"
+            ]
+            ranked = rank_anomalous_processes(process_clean)
+            if not ranked.empty:
+                st.dataframe(
+                    ranked.style.map(
+                        lambda v: (
+                            "background-color:#f8d7da;color:#721c24"
+                            if v is True
+                            else ""
+                        ),
+                        subset=["flagged"],
+                    ),
+                    width="stretch",
+                )
+
+                fig_proc = go.Figure()
+                fig_proc.add_trace(
+                    go.Bar(
+                        x=ranked["process_name"],
+                        y=ranked["avg_cpu"],
+                        marker_color=[RED if f else ACCENT for f in ranked["flagged"]],
+                    )
+                )
+                fig_proc.update_layout(
+                    title="Average CPU by Process",
+                    xaxis_title="Process",
+                    yaxis_title="Avg CPU %",
+                    xaxis=dict(tickangle=45),
+                    template="plotly_white",
+                    height=350,
+                )
+                st.plotly_chart(fig_proc, width="stretch")
+            else:
+                st.info("Not enough process data for ranking.")
+            st.markdown("---")
+
+            st.subheader("🌐 Network Spike Detection")
+            net_anom = detect_network_anomalies(network_df)
+            spikes = net_anom[net_anom["net_anomaly"]]
+            if not spikes.empty:
+                st.warning(f"⚠️ {len(spikes)} network spike(s) detected")
+                st.dataframe(
+                    spikes[["timestamp", "upload_speed_mb", "download_speed_mb"]],
+                    width="stretch",
+                )
+            else:
+                st.success("✅ No network spikes detected.")
 
         with t_pdf:
             try:
