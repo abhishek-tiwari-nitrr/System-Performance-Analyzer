@@ -424,7 +424,7 @@ def available_days(username: str):
     rows = (
         get_conn()
         .execute(
-            "SELECT DISTINCT DATE(?) d FROM system_metrics WHERE username=? ORDER BY d",
+            "SELECT DISTINCT DATE(timestamp) d FROM system_metrics WHERE username=? ORDER BY d",
             (username,),
         )
         .fetchall()
