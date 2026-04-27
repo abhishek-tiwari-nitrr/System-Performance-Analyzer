@@ -3,9 +3,9 @@ import numpy as np
 from datetime import datetime, timezone, timedelta
 from src.services.base_service import BaseService
 from src.config.config import SYSTEM_METRICS_INTERVAL
-from src.logger.logger import Logger
+from src.logger.logger import logger
 
-logger = Logger().setup_logs()
+
 IST = timezone(timedelta(hours=5, minutes=30))
 
 class SystemMetrics(BaseService):

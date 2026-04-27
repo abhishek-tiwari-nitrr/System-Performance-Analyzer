@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 import bcrypt
-from src.logger.logger import Logger
+from src.logger.logger import logger
 from src.database.database import (
     get_user,
     insert_user,
@@ -9,8 +9,6 @@ from src.database.database import (
     init_db,
     get_setting,
 )
-
-logger = Logger().setup_logs()
 
 # loads variables from .env into environment
 load_dotenv()
@@ -92,7 +90,9 @@ class UserAuthService:
             return False
 
         new_user = insert_user(username.strip(), self._hash(password), email.strip())
-        logger.info(f"Register '{username}': {'Done' if new_user else 'failed (exists)'}")
+        logger.info(
+            f"Register '{username}': {'Done' if new_user else 'failed (exists)'}"
+        )
         return new_user
 
     def login_user(self, username: str, password: str) -> bool:

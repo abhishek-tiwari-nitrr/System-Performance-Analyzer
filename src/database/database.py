@@ -2,9 +2,8 @@ import os
 import sqlite3
 import threading
 from src.config.config import DB_PATH, DATA_DIR
-from src.logger.logger import Logger
+from src.logger.logger import logger
 
-logger = Logger().setup_logs()
 
 # Tables:
 # 1. user - Stores user details

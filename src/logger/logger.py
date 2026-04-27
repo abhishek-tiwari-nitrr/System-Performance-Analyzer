@@ -2,48 +2,39 @@ import logging, os
 from src.config.config import LOG_DIR
 
 
-class Logger:
+def _setup_logs() -> logging.Logger:
     """
-    A utility class for setting up structured file-based logging.
-    On initialization, it ensures that a `logs/` directory exists
+    Logging configuration for the application.
 
-    Attributes: None
+    This module defines and initializes a singleton logger instance named "SPA". The logger writes log messages to a file located in the directory specified by LOG_DIR, creating the directory if it does not already exist
 
-    Methods:
-        setup_logs(): Configures logging settings and returns a logger instance
-
-    """
-
-    def __init__(self):
-        """
-        Initialize the Logger class.
-        Creates the `logs/` directory if it does not already exist
-        """
-        os.makedirs(LOG_DIR, exist_ok=True)
-
-    def setup_logs(self):
-        """
-        Configure the logging system and return a named logger.
-
-        Logging Configuration:
+    Logging Configuration:
             - File Path: ./logs/app.log
             - Mode: Append (`a`)
             - Level: INFO
             - Format: Timestamp | Level | Message
             - Date Format: YYYY-MM-DD HH:MM:SS
+    
+    Returns:
+        - logging.Logger: A configured logger instance named "SPA"
+    """
+    log = logging.getLogger("SPA")
+    if log.handlers:
+        return log
 
-        Returns:
-            logging.Logger: A configured logger instance named `SPA`
+    os.makedirs(LOG_DIR, exist_ok=True)
 
-        Example:
-            logger = Logger().setup_logs()
-            logger.info("This is an info message")
-        """
-        logging.basicConfig(
-            filename="./logs/app.log",
-            filemode="a",
-            level=logging.INFO,
-            format="%(asctime)s | %(levelname)s | %(message)s",
+    handler = logging.FileHandler(LOG_DIR / "app.log", mode="a", encoding="utf-8")
+    handler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s | %(levelname)s | %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
-        return logging.getLogger("SPA")
+    )
+    log.addHandler(handler)
+    log.setLevel(logging.INFO)
+    log.propagate = False
+    return log
+
+
+logger = _setup_logs()

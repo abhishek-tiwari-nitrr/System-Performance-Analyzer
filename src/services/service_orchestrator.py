@@ -11,10 +11,9 @@ from src.database.database import (
     insert_network_metric,
     get_setting,
 )
+from src.logger.logger import logger
 
-from src.logger.logger import Logger
 
-logger = Logger().setup_logs()
 IST = timezone(timedelta(hours=5, minutes=30))
 
 
@@ -235,7 +234,7 @@ class ServiceOrchestrator:
             - "idle": Not started
             - "running": Currently collecting metrics
             - "done": Completed execution
-        
+
         Returns:
             - str: Current monitoring status
         """

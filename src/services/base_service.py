@@ -1,13 +1,11 @@
 from abc import ABC, abstractmethod
-from src.logger.logger import Logger
-
-logger = Logger().setup_logs()
+from src.logger.logger import logger
 
 
 class BaseService(ABC):
     """
     Abstract base class for all service collectors.
-    
+
     This class ensures that every subclass implements the `collect()` method while providing a common `run_collect()` method that handles logging before executing the collection process
 
     Methods:
@@ -17,7 +15,7 @@ class BaseService(ABC):
     """
 
     def run_collect(self):
-        """ 
+        """
         Execute the collection workflow with logging.
         Logs the class name and invokes the subclass-defined `collect()` method
 
@@ -36,4 +34,3 @@ class BaseService(ABC):
         Returns:
             Any: Depends on subclass implementation.
         """
-        pass

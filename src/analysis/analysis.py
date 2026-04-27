@@ -17,9 +17,7 @@ from src.config.config import (
     MAX_TICKER,
     PROCESS_LIMIT,
 )
-from src.logger.logger import Logger
-
-logger = Logger().setup_logs()
+from src.logger.logger import logger
 
 
 class Analysis:
@@ -272,8 +270,8 @@ class Analysis:
             logger.error(f"System plot - Battery Percentage trend over time: {e}")
 
         return plots
-    
-    def run(self, date:str = None):
+
+    def run(self, date: str = None):
         if date is None:
             date = str(datetime.today().day)
 
@@ -283,5 +281,11 @@ class Analysis:
         process_plot = self._plot_process(process_df)
         system_plot = self._plot_system(system_df)
 
-        return network_df, process_df, system_df, network_plot, process_plot, system_plot
-
+        return (
+            network_df,
+            process_df,
+            system_df,
+            network_plot,
+            process_plot,
+            system_plot,
+        )
