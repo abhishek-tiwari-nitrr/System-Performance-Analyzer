@@ -5,7 +5,15 @@ from datetime import datetime
 import glob
 import os
 from src.auth.user_auth import UserAuthService
-from src.config.config import TOKEN_PARAM, ACCENT, GREEN, ORANGE, PROCESS_LIMIT, RED
+from src.config.config import (
+    TOKEN_PARAM,
+    ACCENT,
+    GREEN,
+    ORANGE,
+    PROCESS_LIMIT,
+    RED,
+    DB_PATH,
+)
 import plotly.graph_objects as go
 import plotly.express as px
 from src.report_gen.report_generator import ReportGenerator
@@ -19,7 +27,17 @@ from src.ml_engine.ml_engine import (
     rank_anomalous_processes,
     detect_network_anomalies,
 )
-from src.database.database import init_db, available_days, user_stats
+from src.database.database import (
+    init_db,
+    available_days,
+    user_stats,
+    get_setting,
+    set_setting,
+    all_settings,
+    all_users,
+    global_stats,
+    delete_user,
+)
 
 
 init_db()
@@ -86,9 +104,6 @@ DEFAULTS = dict(
     monitor_done=False,
     monitor_samples=0,
     monitor_clamped=None,
-    pdf_bytes=None,
-    pdf_ready=False,
-    pdf_day=None,
 )
 
 for k, v in DEFAULTS.items():
@@ -197,7 +212,9 @@ def sidebar() -> str:
             )
         st.markdown("---")
 
-        nav_options = ["📈 Dashboard", "🔍 Monitor", "📊 Report"]
+        nav_options = ["📈 Dashboard", "🔍 Monitor", "📊 Report", "⚙️ Settings"]
+        if st.session_state.is_admin:
+            nav_options.append("🛡️ Admin Panel")
         page = st.radio("Select a page", nav_options, label_visibility="collapsed")
 
         st.markdown("---")
@@ -207,22 +224,24 @@ def sidebar() -> str:
 
     return page
 
+
 def page_dashboard():
     user = st.session_state.username
     st.title("📈 Dashboard")
 
     stats = user_stats(user)
-    days  = available_days(user)
+    days = available_days(user)
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("System Readings",  stats["system_rows"])
+    c1.metric("System Readings", stats["system_rows"])
     c2.metric("Process Readings", stats["process_rows"])
     c3.metric("Network Readings", stats["network_rows"])
-    c4.metric("Days with Data",   len(days))
+    c4.metric("Days with Data", len(days))
 
     if not days:
         st.info("📭 No data yet. Go to **Monitor** to collect your first readings.")
         return
+
 
 def page_monitor():
     user = st.session_state.username
@@ -680,6 +699,34 @@ def page_report():
                 logger.exception(f"PDF generation failed: {e}")
 
 
+def page_settings():
+    user = st.session_state.username
+    st.title("⚙️ Settings")
+    st.markdown("---")
+
+    with st.expander("🔐 Change Password", expanded=True):
+        current_password = st.text_input(
+            "Current password", type="password", key="pass_cur"
+        )
+        new_password = st.text_input("New password", type="password", key="pass_new")
+        confirm_new_password = st.text_input(
+            "Confirm new", type="password", key="pass_con"
+        )
+        if st.button("Update Password", type="primary"):
+            if not current_password or not new_password:
+                st.warning("Fill all fields.")
+            elif new_password != confirm_new_password:
+                st.error("Passwords don't match.")
+            elif len(new_password) < 6:
+                st.error("Must be ≥ 6 characters.")
+            elif auth.change_password(user, current_password, new_password):
+                st.success("✅ Password updated!")
+            else:
+                st.error("❌ Current password incorrect.")
+
+
+
+
 def main():
     if not st.session_state.logged_in:
         page_auth()
@@ -693,6 +740,10 @@ def main():
         page_monitor()
     elif page == "📊 Report":
         page_report()
+    elif page == "⚙️ Settings":
+        page_settings()
+    elif page == "🛡️ Admin Panel":
+        page_admin()
 
 
 if __name__ == "__main__":
