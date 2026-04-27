@@ -16,6 +16,7 @@ from src.config import (
     ORANGE,
     MAX_TICKER,
     PROCESS_LIMIT,
+    PDF_DPI,
 )
 from src.logger import logger
 
@@ -44,7 +45,7 @@ class Analysis:
 
     def _save(self, plot_name: str):
         path = os.path.join(REPORT_DIR, plot_name)
-        plt.savefig(path, dpi=300, bbox_inches="tight")
+        plt.savefig(path, dpi=PDF_DPI, bbox_inches="tight")
         plt.close("all")
         return path
 
