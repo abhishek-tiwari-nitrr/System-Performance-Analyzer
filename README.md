@@ -1,11 +1,13 @@
 # 🖥️ System Performance Analyzer
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
-[![Live App](https://img.shields.io/badge/Live%20App-Streamlit-brightgreen)]()
+[![Live App](https://img.shields.io/badge/Live%20App-Streamlit-brightgreen)](https://abhishek-tiwari-nitrr-system-performance-analyzer.streamlit.app/)
 
 > A Streamlit web application that monitors system performance in real time (CPU, RAM, swap, battery, network and per-process usage), detects anomalies with a lightweight ML pipeline and generates downloadable PDF reports.
 
 > Built as a fully modular Python project with JWT-based session persistence, bcrypt-hashed credentials, role-based admin access and SQLite-backed storage designed to be readable, low-latency and easy to deploy.
+
+> ⚠️ **Live Demo** — For reference only. It Monitors the cloud container, not your machine. Shows how the app works on your own machine when run locally.
 
 ---
 
