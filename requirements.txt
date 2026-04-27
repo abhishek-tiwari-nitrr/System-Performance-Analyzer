@@ -1,0 +1,9 @@
+psutil
+python-dotenv
+bcrypt
+streamlit
+PyJWT
+matplotlib
+scikit-learn
+plotly
+reportlab
