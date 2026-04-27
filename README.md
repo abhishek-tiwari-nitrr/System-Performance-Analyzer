@@ -7,7 +7,7 @@
 
 > Built as a fully modular Python project with JWT-based session persistence, bcrypt-hashed credentials, role-based admin access and SQLite-backed storage designed to be readable, low-latency and easy to deploy.
 
-> ⚠️ **Live Demo** — For reference only. It Monitors the cloud container, not your machine. Shows how the app works on your own machine when run locally.
+> ⚠️ **Live Demo** - For reference only. It Monitors the cloud container, not your machine. Shows how the app works on your own machine when run locally.
 
 ---
 
