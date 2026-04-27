@@ -19,7 +19,7 @@ from src.ml_engine.ml_engine import (
     rank_anomalous_processes,
     detect_network_anomalies,
 )
-from src.database.database import init_db, available_days
+from src.database.database import init_db, available_days, user_stats
 
 
 init_db()
@@ -197,7 +197,7 @@ def sidebar() -> str:
             )
         st.markdown("---")
 
-        nav_options = ["🔍 Monitor", "📊 Report"]
+        nav_options = ["📈 Dashboard", "🔍 Monitor", "📊 Report"]
         page = st.radio("Select a page", nav_options, label_visibility="collapsed")
 
         st.markdown("---")
@@ -207,6 +207,22 @@ def sidebar() -> str:
 
     return page
 
+def page_dashboard():
+    user = st.session_state.username
+    st.title("📈 Dashboard")
+
+    stats = user_stats(user)
+    days  = available_days(user)
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("System Readings",  stats["system_rows"])
+    c2.metric("Process Readings", stats["process_rows"])
+    c3.metric("Network Readings", stats["network_rows"])
+    c4.metric("Days with Data",   len(days))
+
+    if not days:
+        st.info("📭 No data yet. Go to **Monitor** to collect your first readings.")
+        return
 
 def page_monitor():
     user = st.session_state.username
@@ -671,12 +687,12 @@ def main():
 
     page = sidebar()
 
-    if page == "🔍 Monitor":
+    if page == "📈 Dashboard":
+        page_dashboard()
+    elif page == "🔍 Monitor":
         page_monitor()
     elif page == "📊 Report":
         page_report()
-    else:
-        page_monitor()
 
 
 if __name__ == "__main__":
