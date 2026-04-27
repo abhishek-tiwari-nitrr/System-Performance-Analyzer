@@ -52,7 +52,7 @@ def render() -> None:
         if users:
             df = pd.DataFrame(users)
             df["is_admin"] = df["is_admin"].apply(lambda v: "✅ Admin" if v else "User")
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(df, width='stretch')
 
             st.markdown("---")
             st.subheader("Delete a User & their data")
@@ -96,7 +96,7 @@ def render() -> None:
                     "network_rows": s["network_rows"],
                 }
             )
-        st.dataframe(pd.DataFrame(rows), use_container_width=True)
+        st.dataframe(pd.DataFrame(rows), width='stretch')
 
         st.markdown("---")
         if DB_PATH.exists():
