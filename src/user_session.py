@@ -1,7 +1,7 @@
 import jwt
 import os
 from dotenv import load_dotenv
-from src.config.config import ALGORITHM, TOKEN_DAYS
+from src.config import ALGORITHM, TOKEN_DAYS
 from datetime import datetime, timedelta, timezone
 
 load_dotenv()
@@ -11,7 +11,7 @@ SPA_SECRET_KEY = os.environ.get("SPA_SECRET_KEY")
 
 def create_token(username: str) -> str:
     payload = {
-        "sub": username, 
+        "sub": username,
         # Expiration time
         "exp": datetime.now(timezone.utc) + timedelta(days=TOKEN_DAYS),
         # Issued at

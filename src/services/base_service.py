@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from src.logger.logger import logger
+from src.logger import logger
 
 
 class BaseService(ABC):

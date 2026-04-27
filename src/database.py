@@ -1,8 +1,8 @@
 import os
 import sqlite3
 import threading
-from src.config.config import DB_PATH, DATA_DIR
-from src.logger.logger import logger
+from src.config import DB_PATH, DATA_DIR
+from src.logger import logger
 
 
 # Tables:
@@ -14,57 +14,57 @@ from src.logger.logger import logger
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-username TEXT UNIQUE NOT NULL,
-password_hash TEXT NOT NULL,
-email TEXT DEFAULT '',
-is_admin INTEGER DEFAULT 0,
-created_at TEXT DEFAULT (datetime('now'))
-);
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    email TEXT DEFAULT '',
+    is_admin INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+    );
 
-CREATE TABLE IF NOT EXISTS network_metrics (
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-username TEXT NOT NULL,
-timestamp TEXT NOT NULL,
-upload_speed_mb  REAL,
-download_speed_mb REAL,
-bytes_sent INTEGER,
-bytes_received INTEGER
+    CREATE TABLE IF NOT EXISTS network_metrics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    timestamp TEXT NOT NULL,
+    upload_speed_mb  REAL,
+    download_speed_mb REAL,
+    bytes_sent INTEGER,
+    bytes_received INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS process_metrics (
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-username TEXT NOT NULL,
-timestamp TEXT NOT NULL,
-process_name TEXT,
-cpu_percent REAL,
-memory_percent REAL
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    timestamp TEXT NOT NULL,
+    process_name TEXT,
+    cpu_percent REAL,
+    memory_percent REAL
 );
 
 CREATE TABLE IF NOT EXISTS system_metrics (
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-username TEXT NOT NULL,
-timestamp TEXT NOT NULL,
-overall_cpu_load REAL,
-vm_total_memory REAL,
-vm_available_memory REAL,
-vm_used_memory REAL,
-vm_percent_used REAL,
-swap_memory_available_total REAL,
-swap_memory_used REAL,
-battery_percent REAL
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    timestamp TEXT NOT NULL,
+    overall_cpu_load REAL,
+    vm_total_memory REAL,
+    vm_available_memory REAL,
+    vm_used_memory REAL,
+    vm_percent_used REAL,
+    swap_memory_available_total REAL,
+    swap_memory_used REAL,
+    battery_percent REAL
 );
 
 CREATE TABLE IF NOT EXISTS settings (
-key TEXT PRIMARY KEY,
-value TEXT NOT NULL
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
 );
 
 -- default admin settings
 INSERT OR IGNORE INTO settings (key, value) VALUES
-('max_monitor_minutes', '5'),
-('app_name', 'System Performance Analyzer'),
-('allow_registration', '1');
+    ('max_monitor_minutes', '5'),
+    ('app_name', 'System Performance Analyzer'),
+    ('allow_registration', '1');
 """
 
 # Store thread-specific database connections
@@ -115,7 +115,7 @@ def init_db():
     conn = get_conn()
     conn.executescript(SCHEMA)
     conn.commit()
-    logger.info("Database initialised.")
+    logger.info(f"Database initialised.")
 
 
 # Users

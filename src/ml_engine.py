@@ -1,8 +1,8 @@
 import pandas as pd
 from sklearn.ensemble import IsolationForest
-from src.config.config import PROCESS_LIMIT
+from src.config import PROCESS_LIMIT
 from sklearn.preprocessing import StandardScaler
-from src.logger.logger import logger
+from src.logger import logger
 
 
 def detect_anomalies(

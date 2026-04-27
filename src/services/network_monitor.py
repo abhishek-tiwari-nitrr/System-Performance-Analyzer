@@ -1,8 +1,8 @@
 import psutil
 import time
 from src.services.base_service import BaseService
-from src.config.config import NETWORK_MONITOR_INTERVAL
-from src.logger.logger import logger
+from src.config import NETWORK_MONITOR_INTERVAL
+from src.logger import logger
 
 
 class NetworkMonitor(BaseService):

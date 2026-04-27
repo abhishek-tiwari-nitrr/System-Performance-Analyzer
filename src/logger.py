@@ -1,5 +1,5 @@
 import logging, os
-from src.config.config import LOG_DIR
+from src.config import LOG_DIR
 
 
 def _setup_logs() -> logging.Logger:
@@ -14,7 +14,7 @@ def _setup_logs() -> logging.Logger:
             - Level: INFO
             - Format: Timestamp | Level | Message
             - Date Format: YYYY-MM-DD HH:MM:SS
-    
+
     Returns:
         - logging.Logger: A configured logger instance named "SPA"
     """

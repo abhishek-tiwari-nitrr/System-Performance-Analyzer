@@ -1,12 +1,12 @@
 from dotenv import load_dotenv
 import os
+import streamlit as st
 import bcrypt
-from src.logger.logger import logger
-from src.database.database import (
+from src.logger import logger
+from src.database import (
     get_user,
     insert_user,
     update_password,
-    init_db,
     get_setting,
 )
 
@@ -34,7 +34,6 @@ class UserAuthService:
         """
         Initializes the database connection and ensures schema setup.
         """
-        init_db()
         self._add_admin()
 
     def _add_admin(self):
@@ -50,6 +49,7 @@ class UserAuthService:
             )
             logger.info("Admin account Added.")
 
+    @staticmethod
     def _hash(self, password: str) -> str:
         """
         Hashes a plain text password using bcrypt.
@@ -61,6 +61,7 @@ class UserAuthService:
         """
         return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
+    @staticmethod
     def _verify(self, password: str, hashed: str) -> bool:
         """
         Verifies a plain text password against a hashed password.
@@ -132,6 +133,7 @@ class UserAuthService:
         logger.info(f"Password changed: {username}")
         return True
 
+    @staticmethod
     def registration_allowed(self) -> bool:
         """
         Checks whether new user registration is allowed by system settings.
@@ -141,6 +143,7 @@ class UserAuthService:
         """
         return get_setting("allow_registration", "1") == "1"
 
+    @staticmethod
     def is_admin(self, username: str) -> bool:
         """
         Checks whether a given user has admin privileges.
@@ -152,3 +155,8 @@ class UserAuthService:
         """
         row = get_user(username)
         return bool(row and row["is_admin"])
+
+
+@st.cache_resource(show_spinner=False)
+def get_auth_service() -> UserAuthService:
+    return UserAuthService()

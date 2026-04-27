@@ -1,7 +1,7 @@
 import psutil
 from src.services.base_service import BaseService
-from src.config.config import PROCESS_LIMIT
-from src.logger.logger import logger
+from src.config import PROCESS_LIMIT
+from src.logger import logger
 
 
 class ProcessMonitor(BaseService):

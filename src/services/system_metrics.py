@@ -2,11 +2,12 @@ import psutil
 import numpy as np
 from datetime import datetime, timezone, timedelta
 from src.services.base_service import BaseService
-from src.config.config import SYSTEM_METRICS_INTERVAL
-from src.logger.logger import logger
+from src.config import SYSTEM_METRICS_INTERVAL
+from src.logger import logger
 
 
 IST = timezone(timedelta(hours=5, minutes=30))
+
 
 class SystemMetrics(BaseService):
     """
@@ -18,13 +19,14 @@ class SystemMetrics(BaseService):
 
     Methods:
         collect(): collect all system metrics
-        
+
     Private Methods:
         _cpu_metrics(): measure per-core CPU usage and return the mean
         _memory_metrics(): read virtual and swap memory statistics
         _battery_metrics(): read current battery charge level, if available
 
     """
+
     def _cpu_metrics(self) -> dict:
         """
         Measure CPU usage averaged across all cores.
@@ -39,7 +41,7 @@ class SystemMetrics(BaseService):
             {
                 "overall_cpu_load": 12.0
             }
-                
+
         """
         per_core_usage = psutil.cpu_percent(
             interval=SYSTEM_METRICS_INTERVAL, percpu=True
@@ -80,7 +82,7 @@ class SystemMetrics(BaseService):
             "vm_used_memory": round(vm.used / 1e9, 2),
             "vm_percent_used": vm.percent,
             "swap_memory_available_total": round(swap.total / 1e9, 2),
-            "swap_memory_used": round(swap.used / 1e9, 2)
+            "swap_memory_used": round(swap.used / 1e9, 2),
         }
 
     def _battery_metrics(self) -> dict:
@@ -135,7 +137,7 @@ class SystemMetrics(BaseService):
                                 },
             "battery_metrics": {
                                 "current_battery_percent": 75.0
-                                } 
+                                }
             }
         """
         try:

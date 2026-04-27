@@ -3,15 +3,14 @@ from datetime import datetime, timezone, timedelta
 from src.services.system_metrics import SystemMetrics
 from src.services.process_monitor import ProcessMonitor
 from src.services.network_monitor import NetworkMonitor
-from src.config.config import SYSTEM_METRICS_INTERVAL, MAX_MONITOR_MINUTES
-from src.database.database import (
-    init_db,
+from src.config import SYSTEM_METRICS_INTERVAL, MAX_MONITOR_MINUTES
+from src.database import (
     insert_system_metric,
     insert_process_metrics,
     insert_network_metric,
     get_setting,
 )
-from src.logger.logger import logger
+from src.logger import logger
 
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -61,7 +60,6 @@ class ServiceOrchestrator:
             - username(str): Identifier used to associate collected metrics
             - interval(int | optional): Time interval (in seconds) between metric collections. Defaults to SYSTEM_METRICS_INTERVAL
         """
-        init_db()
         self.username = username
         self.interval = interval
         self._running = False

@@ -10,7 +10,7 @@ from reportlab.platypus import (
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from datetime import datetime
-from src.logger.logger import logger
+from src.logger import logger
 
 
 class ReportGenerator:

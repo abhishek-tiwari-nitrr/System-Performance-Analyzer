@@ -3,12 +3,12 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-from src.database.database import (
+from src.database import (
     fetch_network_metrics,
     fetch_process_metrics,
     fetch_system_metrics,
 )
-from src.config.config import (
+from src.config import (
     REPORT_DIR,
     RED,
     GREEN,
@@ -17,7 +17,7 @@ from src.config.config import (
     MAX_TICKER,
     PROCESS_LIMIT,
 )
-from src.logger.logger import logger
+from src.logger import logger
 
 
 class Analysis:
