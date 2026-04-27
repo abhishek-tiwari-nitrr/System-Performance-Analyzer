@@ -50,7 +50,7 @@ class UserAuthService:
             logger.info("Admin account Added.")
 
     @staticmethod
-    def _hash(self, password: str) -> str:
+    def _hash(password: str) -> str:
         """
         Hashes a plain text password using bcrypt.
 
@@ -62,7 +62,7 @@ class UserAuthService:
         return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
     @staticmethod
-    def _verify(self, password: str, hashed: str) -> bool:
+    def _verify(password: str, hashed: str) -> bool:
         """
         Verifies a plain text password against a hashed password.
 
@@ -134,7 +134,7 @@ class UserAuthService:
         return True
 
     @staticmethod
-    def registration_allowed(self) -> bool:
+    def registration_allowed() -> bool:
         """
         Checks whether new user registration is allowed by system settings.
 
@@ -144,7 +144,7 @@ class UserAuthService:
         return get_setting("allow_registration", "1") == "1"
 
     @staticmethod
-    def is_admin(self, username: str) -> bool:
+    def is_admin(username: str) -> bool:
         """
         Checks whether a given user has admin privileges.
 

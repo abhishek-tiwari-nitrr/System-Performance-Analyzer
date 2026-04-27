@@ -2,7 +2,7 @@ import streamlit as st
 from src.user_auth import get_auth_service
 from src.config import TOKEN_PARAM
 from src.logger import logger
-from src.user_auth import create_token
+from src.user_session import create_token
 
 
 def _login_success(username: str):

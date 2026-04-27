@@ -1,7 +1,7 @@
 from pathlib import Path
 
 # base path
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 LOG_DIR = BASE_DIR / "logs"
 DATA_DIR = BASE_DIR / "data"
 REPORT_DIR = BASE_DIR / "report"
@@ -34,3 +34,4 @@ RED = "#EF4444"
 
 # Plot
 MAX_TICKER = 10
+PDF_DPI = 150
