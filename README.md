@@ -85,6 +85,11 @@ ADMIN_PASSWORD=admin-password
 SPA_SECRET_KEY=long-random-secret-key
 ```
 
+## Demo
+
+View Complete [Demo](Demo/Demo%20of%20System%20Performance%20Analyzer.mp4)
+
+![Demo](Demo/Demo%20of%20System%20Performance%20Analyzer.gif)
 
 ## Tech Stack
  
