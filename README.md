@@ -85,11 +85,11 @@ ADMIN_PASSWORD=admin-password
 SPA_SECRET_KEY=long-random-secret-key
 ```
 
-## Demo
 
-View Complete [Demo](Demo/Demo%20of%20System%20Performance%20Analyzer.mp4)
+## 📺 Demo
 
-![Demo](Demo/Demo%20of%20System%20Performance%20Analyzer.gif)
+[![System Performance Analyzer Demo](https://img.youtube.com/vi/JKns0b45UX8/maxresdefault.jpg)](https://youtu.be/JKns0b45UX8)
+
 
 ## Tech Stack
  
